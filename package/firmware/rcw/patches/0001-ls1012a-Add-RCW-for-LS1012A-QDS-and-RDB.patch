@@ -1,0 +1,436 @@
+From eb94446315dfab0f7bc514b3c60821888f456c23 Mon Sep 17 00:00:00 2001
+From: Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+Date: Sun, 10 Apr 2016 18:58:28 +0530
+Subject: [PATCH 1/3] ls1012a: Add RCW for LS1012A QDS and RDB
+
+Add support of 0x3508 SerDes protocol for LS1012AQDS and
+LS1012ARDB.
+
+Signed-off-by: Akhila Kavi <akhila.kavi@nxp.com>
+Signed-off-by: Prabhakar Kushwaha <prabhakar.kushwaha@nxp.com>
+---
+ ls1012aqds/Makefile                 |    1 +
+ ls1012aqds/README                   |   33 +++++++++++++++++++
+ ls1012aqds/R_SPNH_3508/rcw_1000.rcw |   59 +++++++++++++++++++++++++++++++++
+ ls1012aqds/byte_swap.tcl            |   36 +++++++++++++++++++++
+ ls1012aqds/cci_barrier_disable.rcw  |    8 +++++
+ ls1012aqds/dcsr_mbist.rcw           |    8 +++++
+ ls1012aqds/ls1012a.rcwi             |   61 +++++++++++++++++++++++++++++++++++
+ ls1012aqds/serdes_sata.rcw          |    8 +++++
+ ls1012aqds/uboot_address.rcw        |    7 ++++
+ ls1012aqds/usb_phy_freq.rcw         |    7 ++++
+ ls1012ardb/Makefile                 |    1 +
+ ls1012ardb/README                   |   33 +++++++++++++++++++
+ ls1012ardb/R_SPNH_3508/rcw_1000.rcw |   54 +++++++++++++++++++++++++++++++
+ 13 files changed, 316 insertions(+)
+ create mode 100644 ls1012aqds/Makefile
+ create mode 100644 ls1012aqds/README
+ create mode 100644 ls1012aqds/R_SPNH_3508/rcw_1000.rcw
+ create mode 100755 ls1012aqds/byte_swap.tcl
+ create mode 100644 ls1012aqds/cci_barrier_disable.rcw
+ create mode 100644 ls1012aqds/dcsr_mbist.rcw
+ create mode 100644 ls1012aqds/ls1012a.rcwi
+ create mode 100644 ls1012aqds/serdes_sata.rcw
+ create mode 100644 ls1012aqds/uboot_address.rcw
+ create mode 100644 ls1012aqds/usb_phy_freq.rcw
+ create mode 100644 ls1012ardb/Makefile
+ create mode 100644 ls1012ardb/README
+ create mode 100644 ls1012ardb/R_SPNH_3508/rcw_1000.rcw
+
+diff --git a/ls1012aqds/Makefile b/ls1012aqds/Makefile
+new file mode 100644
+index 0000000..f77e46b
+--- /dev/null
++++ b/ls1012aqds/Makefile
+@@ -0,0 +1 @@
++include ../Makefile.inc
+diff --git a/ls1012aqds/README b/ls1012aqds/README
+new file mode 100644
+index 0000000..070ec36
+--- /dev/null
++++ b/ls1012aqds/README
+@@ -0,0 +1,33 @@
++The RCW directories names for the LS1012AQDS boards conform to the following
++naming convention:
++
++a_bcde_f:
++
++a = 'R' indicates RGMII1 is supported
++
++b = What is available in Slot 1
++c = What is available in Slot 2
++d = What is available in Slot 3
++e = What is available in SATA connector
++
++For the Slots (b..e):
++ 'N' is NULL, not available/not used
++ 'P' is PCIe
++ 'S' is SGMII
++ 'H' is SATA
++
++For the srds_prtcl (f):
++f = 'hex value of serdes1 protocol value'
++
++Files naming convention
++=============================
++rcw_x.rcw
++rcw_x_bootmode.rcw
++rcw_x_specialsetting.rcw
++x = Core frequency
++specialsetting = special setting:
++			sben:Secure boot
++For example,
++	rcw_1000.rcw means rcw for core frequency of 1000MHz with nor boot.
++
++For more information please refer to the comments in rcw file.
+diff --git a/ls1012aqds/R_SPNH_3508/rcw_1000.rcw b/ls1012aqds/R_SPNH_3508/rcw_1000.rcw
+new file mode 100644
+index 0000000..d25a081
+--- /dev/null
++++ b/ls1012aqds/R_SPNH_3508/rcw_1000.rcw
+@@ -0,0 +1,59 @@
++/*
++ * LS1012AQDS RCW for SerDes Protocol 0x3508
++ *
++ * 1G configuration -- 1 SGMII + 1 PCI + 1 SATA
++ *
++ * Frequencies:
++ *
++ * Clock: 125 MHz
++ *
++ * Core		-- 1000 MHz (Mul 8)
++ *
++ * Serdes Lanes vs Slot information
++ * B SGMII  : Slot 1
++ * C PCI    : Slot 2
++ * D Empty  : Slot 3
++ * E SATA   : Sata Connector
++ *
++ * Serdes configuration
++ * SRDS_PRTCL_S1	: 0x3508
++ *
++ */
++
++#include <ls1012a.rcwi>
++
++SYS_PLL_RAT=4
++CGA_PLL1_RAT=8
++SRDS_PRTCL_S1=13576
++SRDS_PLL_REF_CLK_SEL_S1=3
++SerDes_REFCLK_SEL=1
++SerDes_INT_REFCLK=1
++PBI_SRC=4
++SYS_PLL_SPD=1
++CGA_PLL1_SPD=1
++EC1_BASE=1
++UART1_BASE=1
++UART2_BASE_FLOW=1
++SDHC1_BASE=1
++SDHC2_BASE_DAT321=3
++SDHC2_BASE_BASE=3
++UART2_BASE_DATA=1
++EMI1_BASE=1
++CLK_OUT_BASE=1
++SDHC1_CD=1
++SDHC1_WP=1
++QSPI_DATA1_GPIO=3
++QSPI_IIC2=2
++USB1_DRVVBUS_BASE=1
++USB1_PWRFAULT_BASE=1
++SDHC1_VSEL=1
++EVDD_VSEL=2
++SYSCLK_FREQ=600
++
++
++
++#include <cci_barrier_disable.rcw>
++#include <usb_phy_freq.rcw>
++#include <uboot_address.rcw>
++#include <dcsr_mbist.rcw>
++#include <serdes_sata.rcw>
+diff --git a/ls1012aqds/byte_swap.tcl b/ls1012aqds/byte_swap.tcl
+new file mode 100755
+index 0000000..a4e8008
+--- /dev/null
++++ b/ls1012aqds/byte_swap.tcl
+@@ -0,0 +1,36 @@
++puts $argv
++set i_file [lindex $argv 0]
++set o_file [lindex $argv 1]
++set num_b  [lindex $argv 2]
++puts ""
++
++set fileid_i [open $i_file "r"]
++set fileid_o [open $o_file "w+"]
++fconfigure $fileid_i -translation {binary binary}
++fconfigure $fileid_o -translation {binary binary}
++
++set old_bin [read $fileid_i]
++set new_bin {}
++set old_length [string length $old_bin]
++set old_rem [expr $old_length % $num_b]
++if {$old_rem != 0} {
++	for {set i 0} {$i< [expr $num_b - $old_rem]} {incr i 1} {
++	        append old_bin y
++	}
++}
++for {set i 0} {$i<[string length $old_bin]} {incr i $num_b} {
++        for {set j $num_b} {$j>0} {incr j -1} {
++                append new_bin [string index $old_bin [expr $i+($j-1)]]
++        }
++}
++
++for {set i 0} {$i<[string length $old_bin]} {incr i $num_b} {
++        set binValue [string range $old_bin [expr $i+0] [expr $i+($num_b-1)]]
++        binary scan $binValue H[expr $num_b*2] hexValue
++
++        set binValue [string range $new_bin [expr $i+0] [expr $i+($num_b-1)]]
++        binary scan $binValue H[expr $num_b*2] hexValue
++}
++
++puts -nonewline $fileid_o $new_bin
++close $fileid_o
+diff --git a/ls1012aqds/cci_barrier_disable.rcw b/ls1012aqds/cci_barrier_disable.rcw
+new file mode 100644
+index 0000000..de31eb9
+--- /dev/null
++++ b/ls1012aqds/cci_barrier_disable.rcw
+@@ -0,0 +1,8 @@
++/*
++ * PBI Commands for LS1012AQDS and LS1012ARDB
++ */
++
++.pbi
++write 0x570178, 0x0000e010
++write 0x180000, 0x00000008
++.end
+diff --git a/ls1012aqds/dcsr_mbist.rcw b/ls1012aqds/dcsr_mbist.rcw
+new file mode 100644
+index 0000000..9fa023b
+--- /dev/null
++++ b/ls1012aqds/dcsr_mbist.rcw
+@@ -0,0 +1,8 @@
++/*
++ * PBI Commands for LS1012AQDS and LS1012ARDB
++ * DCSR MBIST register: 0x2200_8040
++ */
++
++.pbi
++write 0xee00c0, 0x00004400
++.end
+diff --git a/ls1012aqds/ls1012a.rcwi b/ls1012aqds/ls1012a.rcwi
+new file mode 100644
+index 0000000..ef73177
+--- /dev/null
++++ b/ls1012aqds/ls1012a.rcwi
+@@ -0,0 +1,61 @@
++%size=512
++%sysaddr=ee0100
++%pbladdr=610000
++
++SYS_PLL_CFG[0:1]
++SYS_PLL_RAT[2:6]
++CGA_PLL1_CFG[24:25]
++CGA_PLL1_RAT[26:31]
++C1_PLL_SEL[96:99]
++SRDS_PRTCL_S1[128:143]
++FM1_MAC_RAT[158]
++SRDS_PLL_REF_CLK_SEL_S1[160:161]
++USB_REFCLK_SEL[164]
++RGMII_REFCLK_SEL[165]
++RGMII_CLK_DCC[166]
++HDLC2_MODE[167]
++SRDS_PLL_PD_S1[168:169]
++SerDes_REFCLK_SEL[188]
++SerDes_INT_REFCLK[189]
++PBI_SRC[192:195]
++BOOT_HO[201]
++SB_EN[202]
++DDR_RATE[232]
++DDR_RSV0[234]
++SYS_PLL_SPD[242:243]
++CGA_PLL1_SPD[244]
++HOST_AGT_PEX[264]
++GP_INFO[288:319]
++SDHC2_EXT_CLK[354]
++SDHC2_EXT_CMD[355]
++SDHC2_EXT_DAT3[356]
++SDHC2_EXT_DAT2[357]
++SDHC2_EXT_DAT1[358]
++SDHC2_EXT_DAT0[359]
++EC1_EXT_SAI3[360:361]
++EC1_EXT_SAI4[362:363]
++EC1_EXT_SAI2_TX[364]
++EC1_EXT_SAI2_RX[365]
++EC1_BASE[366:367]
++UART1_BASE[368:369]
++UART2_BASE_FLOW[370:371]
++SDHC1_BASE[372:373]
++SDHC2_BASE_DAT321[374:375]
++SDHC2_BASE_BASE[376:377]
++UART2_BASE_DATA[378]
++EMI1_BASE[379]
++GPIO_FTM_EXTCLK_BASE[380:381]
++CLK_OUT_BASE[383]
++SDHC1_CD[419]
++SDHC1_WP[420]
++QSPI_DATA0_GPIO[421]
++QSPI_DATA1_GPIO[422:423]
++QSPI_IIC2[424:425]
++USB1_DRVVBUS_BASE[429:430]
++USB1_PWRFAULT_BASE[431:432]
++SDHC1_VSEL[434]
++EMI1_DMODE[438]
++EVDD_VSEL[439:440]
++IIC1_BASE[441:442]
++EMI1_CMODE[444]
++SYSCLK_FREQ[472:481]
+diff --git a/ls1012aqds/serdes_sata.rcw b/ls1012aqds/serdes_sata.rcw
+new file mode 100644
+index 0000000..16334b3
+--- /dev/null
++++ b/ls1012aqds/serdes_sata.rcw
+@@ -0,0 +1,8 @@
++
++/*
++ * Clear SerDes RxBoost on lane D
++ */
++
++.pbi
++write 0xea08dc, 0x00502880
++.end
+diff --git a/ls1012aqds/uboot_address.rcw b/ls1012aqds/uboot_address.rcw
+new file mode 100644
+index 0000000..ad2ac65
+--- /dev/null
++++ b/ls1012aqds/uboot_address.rcw
+@@ -0,0 +1,7 @@
++/*
++ * PBI Commands for LS1012AQDS and LS1012ARDB
++ */
++
++.pbi
++write 0x570204, 0x40100000
++.end
+diff --git a/ls1012aqds/usb_phy_freq.rcw b/ls1012aqds/usb_phy_freq.rcw
+new file mode 100644
+index 0000000..a00717c
+--- /dev/null
++++ b/ls1012aqds/usb_phy_freq.rcw
+@@ -0,0 +1,7 @@
++/*
++ * PBI Commands for LS1012AQDS and LS1012ARDB
++ */
++
++.pbi
++write 0x570418, 0x0000009c
++.end
+diff --git a/ls1012ardb/Makefile b/ls1012ardb/Makefile
+new file mode 100644
+index 0000000..f77e46b
+--- /dev/null
++++ b/ls1012ardb/Makefile
+@@ -0,0 +1 @@
++include ../Makefile.inc
+diff --git a/ls1012ardb/README b/ls1012ardb/README
+new file mode 100644
+index 0000000..fcdef98
+--- /dev/null
++++ b/ls1012ardb/README
+@@ -0,0 +1,33 @@
++The RCW directories names for the LS1012AQDS boards conform to the following
++naming convention:
++
++a_bcde_f:
++
++a = 'R' indicates RGMII1 is supported
++
++b = What is available in lane 1
++c = What is available in lane 2
++d = What is available in lane 3
++e = What is available in lane 4
++
++For the Slots (a..e):
++ 'N' is NULL, not available/not used
++ 'P' is PCIe
++ 'S' is SGMII
++ 'H' is SATA
++
++For the srds_prtcl (f):
++f = 'hex value of serdes1 protocol value'
++
++Files naming convention
++=============================
++rcw_x.rcw
++rcw_x_bootmode.rcw
++rcw_x_specialsetting.rcw
++x = Core frequency
++specialsetting = special setting:
++			sben:Secure boot
++For example,
++	rcw_1000.rcw means rcw for core frequency of 1000MHz with nor boot.
++
++For more information please refer to the comments in rcw file.
+diff --git a/ls1012ardb/R_SPNH_3508/rcw_1000.rcw b/ls1012ardb/R_SPNH_3508/rcw_1000.rcw
+new file mode 100644
+index 0000000..ff1448f
+--- /dev/null
++++ b/ls1012ardb/R_SPNH_3508/rcw_1000.rcw
+@@ -0,0 +1,54 @@
++/*
++ * LS1012ARDB RCW for SerDes Protocol 0x3508
++ *
++ * 1G configuration -- 1 SGMII + 1 PCI + 1 SATA
++ *
++ * Frequencies:
++ *
++ * Clock: 125 MHz
++ *
++ * Core		-- 1000 MHz 
++ *
++ * Serdes Lanes vs Slot information
++ * A SGMII  : lane 1
++ * B PCI    : lane 2
++ * C empty  : lane 3
++ * D SATA   : lane 4
++ *
++ * Serdes configuration
++ * SRDS_PRTCL_S1	: 0x3508
++ *
++ */
++
++#include <../ls1012aqds/ls1012a.rcwi>
++
++SYS_PLL_RAT=4
++CGA_PLL1_RAT=8
++SRDS_PRTCL_S1=13576
++SRDS_PLL_REF_CLK_SEL_S1=3
++SerDes_REFCLK_SEL=1
++SerDes_INT_REFCLK=1
++PBI_SRC=4
++SYS_PLL_SPD=1
++CGA_PLL1_SPD=1
++EC1_BASE=1
++UART1_BASE=1
++SDHC1_BASE=1
++SDHC2_BASE_DAT321=1
++SDHC2_BASE_BASE=1
++EMI1_BASE=1
++CLK_OUT_BASE=1
++SDHC1_CD=1
++SDHC1_WP=1
++USB1_DRVVBUS_BASE=1
++USB1_PWRFAULT_BASE=1
++SDHC1_VSEL=1
++EVDD_VSEL=2
++SYSCLK_FREQ=600
++
++
++#include <../ls1012aqds/cci_barrier_disable.rcw>
++#include <../ls1012aqds/usb_phy_freq.rcw>
++#include <../ls1012aqds/uboot_address.rcw>
++#include <../ls1012aqds/dcsr_mbist.rcw>
++#include <../ls1012aqds/serdes_sata.rcw>
+-- 
+1.7.9.5
+

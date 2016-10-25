@@ -28,6 +28,7 @@ include $(INCLUDE_DIR)/package.mk
 define rcw/Default
 	TITLE:=
 	CONFIG:=
+	BYTESWAP:=
 endef
 
 define rcw/ls1043ardb
@@ -35,8 +36,15 @@ define rcw/ls1043ardb
 	CONFIG=ls1043ardb/RR_FQPP_1455/rcw_1600.bin
 endef
 
+define rcw/ls1012ardb
+	TITLE=RCW $(PKG_NAME)-$(PKG_VERSION) for NXP ls1012ardb 64b/32b Dev Board
+	CONFIG=ls1012ardb/R_SPNH_3508/rcw_800.bin
+	BYTESWAP=1
+endef
+
 RCWS := \
-	ls1043ardb
+	ls1043ardb \
+	ls1012ardb
 
 define Package/rcw/template
 define Package/rcw-layerscape-$(1)
@@ -59,6 +67,7 @@ endef
 ifdef BUILD_VARIANT
 $(eval $(call rcw/$(BUILD_VARIANT)))
 RCW_CONFIG:=$(if $(CONFIG),$(CONFIG),$(BUILD_VARIANT))
+RCW_BYTESWAP:=$(if $(BYTESWAP),$(BYTESWAP),)
 endif
 
 define Build/Configure
@@ -66,6 +75,10 @@ endef
 
 define Build/Compile
 	+$(MAKE) -C $(PKG_BUILD_DIR)
+	$(if $(RCW_BYTESWAP), \
+		tclsh byte_swap.tcl $(PKG_BUILD_DIR)/$(RCW_CONFIG) $(PKG_BUILD_DIR)/$(RCW_CONFIG).swap 8 ; \
+		$(CP) $(PKG_BUILD_DIR)/$(RCW_CONFIG).swap $(PKG_BUILD_DIR)/$(RCW_CONFIG) ; \
+	)
 endef
 
 define Package/rcw/install/default

@@ -1,0 +1,24 @@
+From 92cfabca4792dee4effa7ed0a9de45d4c9547566 Mon Sep 17 00:00:00 2001
+From: Yutang Jiang <yutang.jiang@nxp.com>
+Date: Wed, 19 Oct 2016 03:24:34 +0800
+Subject: [PATCH 3/3] ls1012a: add pbi byte swap cfg
+
+Signed-off-by: Yutang Jiang <yutang.jiang@nxp.com>
+---
+ ls1012ardb/R_SPNH_3508/rcw_800.rcw |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/ls1012ardb/R_SPNH_3508/rcw_800.rcw b/ls1012ardb/R_SPNH_3508/rcw_800.rcw
+index 77a086d..6faab1e 100644
+--- a/ls1012ardb/R_SPNH_3508/rcw_800.rcw
++++ b/ls1012ardb/R_SPNH_3508/rcw_800.rcw
+@@ -52,3 +52,6 @@ SYSCLK_FREQ=600
+ #include <../ls1012aqds/usb_phy_freq.rcw>
+ #include <../ls1012aqds/serdes_sata.rcw>
+ #include <../ls1012aqds/clock_out.rcw>
++.pbi
++write 0x550000, 0x000f400c
++.end
+-- 
+1.7.9.5
+

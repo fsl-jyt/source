@@ -8,6 +8,8 @@ define Profile/Default/Description
 endef
 
 DEFAULT_PACKAGES+= rcw-layerscape-ls1043ardb uboot-layerscape-ls1043ardb \
-				fman-layerscape-ls1043ardb
+				fman-layerscape-ls1043ardb \
+				rcw-layerscape-ls1012ardb uboot-layerscape-ls1012ardb \
+				kmod-ppfe
 
 $(eval $(call Profile,Default))
