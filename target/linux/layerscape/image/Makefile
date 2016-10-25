@@ -9,18 +9,25 @@ include $(INCLUDE_DIR)/image.mk
 
 define Build/append-ls-rcw
 	rm -f $@
-	dd if=$(KDIR)/rcw.bin >> $@
+	dd if=$(KDIR)/$(1)-rcw.bin >> $@
 endef
 
 define Build/append-ls-uboot
 	if [ 32b = $(SUBTARGET) ]; then \
-		$(CP) $(BIN_DIR)/../64b/$(1)-u-boot-dtb.bin $(KDIR)/ ; \
-	fi;
-	dd if=$(KDIR)/$(1)-u-boot-dtb.bin >> $@
+		if [ -f $(BIN_DIR)/../64b/$(1)-uboot.bin ]; then \
+			$(CP) $(BIN_DIR)/../64b/$(1)-uboot.bin $(KDIR)/ ; \
+		else \
+			echo "****** WARNING ******" ; \
+			echo "$(BIN_DIR)/../64b/$(1)-uboot.bin not exist, please first make 64b device:$(1) then make the 32b" ; \
+			echo "*********************" ; \
+			exit 1; \
+		fi; \
+	fi
+	dd if=$(KDIR)/$(1)-uboot.bin >> $@
 endef
 
 define Build/append-ls-fman
-	dd if=$(KDIR)/fman_ucode.bin >> $@
+	dd if=$(KDIR)/$(1)-fman.bin >> $@
 endef
 
 define Build/append-ls-dtb
@@ -29,6 +36,7 @@ define Build/append-ls-dtb
 endef
 
 define Device/Default
+  PROFILES = Default
   FILESYSTEMS := squashfs
   KERNEL := kernel-bin | gzip | uImage gzip
   DEVICE_DTS :=
@@ -45,16 +53,16 @@ endif
 endef
 
 define Device/ls1043ardb
-  DEVICE_TITLE := ls1043ardb
-  DEVICE_PACKAGES += uboot-layerscape-ls1043ardb fman-ucode
+  DEVICE_TITLE := ls1043ardb-$(SUBTARGET)
+  DEVICE_PACKAGES += rcw-layerscape-ls1043ardb uboot-layerscape-ls1043ardb fman-layerscape-ls1043ardb
 ifeq ($(SUBTARGET),64b)
   DEVICE_DTS = freescale/fsl-ls1043a-rdb
 endif
 ifeq ($(SUBTARGET),32b)
   DEVICE_DTS = ../../../arm64/boot/dts/freescale/fsl-ls1043a-rdb
 endif
-  IMAGE/firmware.bin = append-ls-rcw | pad-to 1M | append-ls-uboot $(1) | pad-to 3M | \
-  					append-ls-fman | pad-to 4M | append-ls-dtb $$(DEVICE_DTS) | pad-to 5M | \
+  IMAGE/firmware.bin = append-ls-rcw $(1) | pad-to 1M | append-ls-uboot $(1) | pad-to 3M | \
+  					append-ls-fman $(1) | pad-to 4M | append-ls-dtb $$(DEVICE_DTS) | pad-to 5M | \
   					append-kernel | pad-to 10M | append-rootfs | pad-to 64M | check-size 67108865
 endef
 TARGET_DEVICES += ls1043ardb

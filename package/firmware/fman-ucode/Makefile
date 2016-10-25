@@ -18,31 +18,67 @@ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_URL:=http://git.freescale.com/git/cgit.cgi/ppc/sdk/fm-ucode.git
 PKG_SOURCE_VERSION:=b19c645821941493fbef32e616b5a16404259976
 
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
+
+PKG_LICENSE:=GPL-2.0 GPL-2.0+
+PKG_LICENSE_FILES:=Licenses/README
+
 include $(INCLUDE_DIR)/package.mk
 
-define Package/fman-ucode
-  SECTION:=firmware
-  CATEGORY:=Firmware
-  URL:=http://git.freescale.com/git/cgit.cgi/ppc/sdk/rcw.git
-  TITLE:=freescale fman ucode
-  DEPENDS:=@TARGET_layerscape
+define fman/Default
+	TITLE:=
+	CONFIG:=
 endef
 
-define Package/fman-ucode/config
-	if PACKAGE_fman-ucode
-		config FMAN-UCODE_LS1043
-			string "fman ucode for ls1043 dpa"
-			default fsl_fman_ucode_ls1043_r1.0_108_4_5.bin
-			depends on TARGET_layerscape_64b_DEVICE_ls1043ardb || TARGET_layerscape_32b_DEVICE_ls1043ardb
-	endif
+define fman/ls1043ardb
+	TITLE=FMAN UCODE $(PKG_NAME)-$(PKG_VERSION) for NXP ls1043ardb 64b/32b Dev Board
+	CONFIG=fsl_fman_ucode_ls1043_r1.0_108_4_5.bin
 endef
+
+FMANS := \
+	ls1043ardb
+
+define Package/fman/template
+define Package/fman-layerscape-$(1)
+	SECTION:=firmware
+	CATEGORY:=Firmware
+	DEPENDS:=@TARGET_layerscape
+	TITLE:=$(2)
+	URL:=http://git.freescale.com/git/cgit.cgi/ppc/sdk/fm-ucode.git
+	VARIANT:=$(1)
+	MAINTAINER:=Jiang Yutang <yutang.jiang@nxp.com>
+endef
+endef
+
+define BuildFMANPackage
+	$(eval $(fman/Default))
+	$(eval $(fman/$(1)))
+	$(call Package/fman/template,$(1),$(TITLE))
+endef
+
+ifdef BUILD_VARIANT
+$(eval $(call fman/$(BUILD_VARIANT)))
+FMAN_CONFIG:=$(if $(CONFIG),$(CONFIG),$(BUILD_VARIANT))
+endif
 
 define Build/Compile
 endef
 
-FU_DEVICES:=$(CONFIG_FMAN-UCODE_LS1043)
-define Package/fman-ucode/install
-	$(foreach fu,$(FU_DEVICES), $(CP) $(PKG_BUILD_DIR)/$(fu) $(KDIR)/fman_ucode.bin ;)
+define Package/fman/install/default
+	$(CP) $(PKG_BUILD_DIR)/$(FMAN_CONFIG) $(KDIR)/$(1)-fman.bin
 endef
 
-$(eval $(call BuildPackage,fman-ucode))
+define Package/fman/install/template
+define Package/fman-layerscape-$(1)/install
+	$(call Package/fman/install/default,$(2))
+endef
+endef
+
+$(foreach f,$(FMANS), \
+	$(eval $(call Package/fman/install/template,$(f),$(f))) \
+)
+
+$(foreach f,$(FMANS), \
+	$(eval $(call BuildFMANPackage,$(f))) \
+	$(eval $(call BuildPackage,fman-layerscape-$(f))) \
+)

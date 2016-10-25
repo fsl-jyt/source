@@ -40,7 +40,7 @@ define Package/uboot/template
 define Package/uboot-layerscape-$(1)
 	SECTION:=boot
 	CATEGORY:=Boot Loaders
-	DEPENDS:= @TARGET_layerscape_64b_DEVICE_$(1)
+	DEPENDS:= @TARGET_layerscape_64b
 	TITLE:=$(2)
 	URL:=http://git.freescale.com/git/cgit.cgi/ppc/sdk/u-boot.git/snapshot
 	VARIANT:=$(1)
@@ -57,6 +57,7 @@ endef
 ifdef BUILD_VARIANT
 $(eval $(call uboot/$(BUILD_VARIANT)))
 UBOOT_CONFIG:=$(if $(CONFIG),$(CONFIG),$(BUILD_VARIANT))
+UBOOT_IMAGE:=$(if $(IMAGE),$(IMAGE),u-boot-dtb.bin)
 endif
 
 define Build/Configure
@@ -70,8 +71,8 @@ define Build/Compile
 endef
 
 define Package/uboot/install/default
-	$(CP) $(PKG_BUILD_DIR)/u-boot-dtb.bin $(KDIR)/$(1)-u-boot-dtb.bin
-	$(CP) $(PKG_BUILD_DIR)/u-boot-dtb.bin $(BIN_DIR)/$(1)-u-boot-dtb.bin
+	$(CP) $(PKG_BUILD_DIR)/$(UBOOT_IMAGE) $(KDIR)/$(1)-uboot.bin
+	$(CP) $(PKG_BUILD_DIR)/$(UBOOT_IMAGE) $(BIN_DIR)/$(1)-uboot.bin
 endef
 
 define Package/uboot/install/template

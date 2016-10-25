@@ -20,9 +20,9 @@ index 68678f3..1564893 100644
 +#define WRTBOOT_DEFAULT "setenv bootargs root=/dev/mtdblock6 " \
 +	"rootfstype=squashfs,jffs2 noinitrd earlycon=uart8250,mmio,0x21c0500 " \
 +	"console=ttyS0,115200 mtdparts=60000000.nor:1M(rcw),1M(u-boot)," \
-+	"1M(u-boot-env),1M(fman),1M(dtb),5M(kernel),54M(rootfs),64M(otherbank)," \
-+	"60M@0x400000(firmware) && cp.b 60400000 $fdtaddr 100000 && " \
-+	"cp.b 60500000 $loadaddr 500000 && bootm $loadaddr - $fdtaddr"
++	"1M(u-boot-env),1M(fman),1M(dtb),5M(kernel),54M(rootfs),64M(otherbank) " \
++	"&& cp.b 60400000 $fdtaddr 100000 && cp.b 60500000 $loadaddr 500000 && " \
++	"bootm $loadaddr - $fdtaddr"
 +#define WRTUPDATE_DEFAULT "tftp a0000000 <your tftp server folder>/" \
 +	"lede-layerscape-64b-ls1043ardb-squashfs-firmware.bin && protect off all" \
 +	" && erase 60000000 +4000000 && cp.b a0000000 60000000 $filesize && reset"
