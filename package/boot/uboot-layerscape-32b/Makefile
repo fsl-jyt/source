@@ -16,7 +16,7 @@ PKG_SOURCE_PROTO:=git
 PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.bz2
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_SOURCE_URL:=https://github.com/fsl-jyt/uboot-ls-32b.git
-PKG_SOURCE_VERSION:=166cb2d1943cebd0044fe1d26c3210d872b18e61
+PKG_SOURCE_VERSION:=bf0adcec3ea92513faaf2575a517a65b4571b5fc
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)-$(BUILD_VARIANT)/$(PKG_NAME)-$(PKG_VERSION)
 
@@ -35,8 +35,14 @@ define uboot/ls1043ardb
 	CONFIG=ls1043ardb-uboot.bin
 endef
 
+define uboot/ls1012ardb
+	TITLE:=U-Boot binary $(PKG_NAME)-$(PKG_VERSION) for NXP ls1012ardb 32b Dev Board
+	CONFIG=ls1012ardb-uboot.bin.swap
+endef
+
 UBOOTS := \
-	ls1043ardb
+	ls1043ardb \
+	ls1012ardb
 
 define Package/uboot/template
 define Package/uboot-layerscape-32b-$(1)
