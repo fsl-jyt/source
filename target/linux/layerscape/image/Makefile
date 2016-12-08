@@ -92,6 +92,13 @@ endif
 endef
 TARGET_DEVICES += ls1012ardb
 
+define Device/ls1021a-twr
+  DEVICE_TITLE := ls1021a-twr
+  DEVICE_DTS = ls1021a-twr
+  IMAGE/firmware.bin = append-ls-dtb $$(DEVICE_DTS) | pad-to 1M | append-kernel | pad-to 6M | append-rootfs | pad-rootfs | check-size 33554433
+endef
+TARGET_DEVICES += ls1021a-twr
+
 define Device/ls1088ardb
   DEVICE_TITLE := ls1088ardb-$(SUBTARGET)
   DEVICE_PACKAGES += rcw-layerscape-ls1088ardb uboot-layerscape-$(SUBTARGET)-ls1088ardb fman-layerscape-ls1088ardb
