@@ -14,6 +14,7 @@ DEFAULT_PACKAGES+= \
 	fman-layerscape-ls1046ardb \
 	rcw-layerscape-ls1012ardb uboot-layerscape-$(SUBTARGET)-ls1012ardb \
 	kmod-ppfe ppfe-ls1012ardb \
+	rcw-layerscape-ls1021atwr uboot-layerscape-$(SUBTARGET)-ls1021atwr \
 	rcw-layerscape-ls1088ardb uboot-layerscape-$(SUBTARGET)-ls1088ardb \
 	kmod-ppfe ppfe-ls1088ardb
 
